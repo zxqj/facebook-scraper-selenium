@@ -1,10 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-from selenium.webdriver.firefox.options import Options
+from Post import Post
 import sys
 import time
 import argparse
@@ -25,9 +22,12 @@ parser.add_argument("-d", "--depth", action="store",
                     dest="depth", default=5, type=int,
                     help="How many recent posts you want to gather -- in multiples of (roughly) 8.")
 
+parser.add_argument("-u", "--postUrl", action="store",
+                    dest="postUrl",
+                    help="Url of single post")
 args = parser.parse_args()
 
-BROWSER_EXE = '/usr/bin/firefox'
+BROWSER_EXE = '/Applications/Firefox.app/Contents/MacOS/firefox-bin'
 GECKODRIVER = '/usr/local/bin/geckodriver'
 
 FIREFOX_BINARY = FirefoxBinary(BROWSER_EXE)
@@ -40,8 +40,7 @@ PROFILE.set_preference("dom.webnotifications.enabled", False)
 PROFILE.set_preference("app.update.enabled", False)
 PROFILE.update_preferences()
 
-
-class CollectPosts(object):
+class PostReader(object):
     """Collector of recent FaceBook posts.
            Note: We bypass the FaceBook-Graph-API by using a 
            selenium FireFox instance! 
@@ -50,36 +49,28 @@ class CollectPosts(object):
            USE THIS FOR EDUCATIONAL PURPOSES ONLY. DO NOT ACTAULLY RUN IT.
     """
 
-    def __init__(self, ids=["oxfess"], corpus_file="posts.csv", depth=5, delay=2):
-        self.ids = ids
-        self.dump = corpus_file
+    def __init__(self, depth=5, delay=2):
         self.depth = depth + 1
         self.delay = delay
+        self.rootUrl = "https://www.facebook.com/"
         # browser instance
         self.browser = webdriver.Firefox(executable_path=GECKODRIVER,
                                          firefox_binary=FIREFOX_BINARY,
                                          firefox_profile=PROFILE,)
 
-        # creating CSV header
-        with open(self.dump, "w", newline='', encoding="utf-8") as save_file:
-            writer = csv.writer(save_file)
-            writer.writerow(["Author", "uTime", "Text"])
+    def readPost(self, url=None, path=None, groupId=None, postId=None):
+        if not (url is None):
+            self.browser.get(url)
+        elif not (path is None):
+            self.browser.get(self.rootUrl+path)
+        else:
+            self.browser.get(self.rootURL+"groups/"+groupId+"/permalink/"+postId)
+        return Post.inFeed.get(self.browser)
 
-    def strip(self, string):
-        """Helping function to remove all non alphanumeric characters"""
-        words = string.split()
-        words = [word for word in words if "#" not in word]
-        string = " ".join(words)
-        clean = ""
-        for c in string:
-            if str.isalnum(c) or (c in [" ", ".", ","]):
-                clean += c
-        return clean
 
-    def collect_page(self, page):
+    def readPosts(self, url):
         # navigate to page
-        self.browser.get(
-            'https://www.facebook.com/' + page + '/')
+        self.browser.get(url)
 
         # Scroll down depth-times and wait delay seconds to load
         # between scrolls
@@ -92,86 +83,18 @@ class CollectPosts(object):
             # Wait to load page
             time.sleep(self.delay)
 
-        # Once the full page is loaded, we can start scraping
-        with open(self.dump, "a+", newline='', encoding="utf-8") as save_file:
-            writer = csv.writer(save_file)
-            links = self.browser.find_elements_by_link_text("See more")
-            for link in links:
-                link.click()
-            posts = self.browser.find_elements_by_class_name(
-                "userContentWrapper")
-            poster_names = self.browser.find_elements_by_xpath(
-                "//a[@data-hovercard-referer]")
-
-            for count, post in enumerate(posts):
-                # Creating first CSV row entry with the poster name (eg. "Donald Trump")
-                analysis = [poster_names[count].text]
-
-                # Creating a time entry.
-                time_element = post.find_element_by_css_selector("abbr")
-                utime = time_element.get_attribute("data-utime")
-                analysis.append(utime)
-
-                # Creating post text entry
-                text = post.find_element_by_class_name("userContent").text
-                status = self.strip(text)
-                analysis.append(status)
-
-                # Write row to csv
-                writer.writerow(analysis)
-
-    def collect_groups(self, group):
-        # navigate to page
-        self.browser.get(
-            'https://www.facebook.com/groups/' + group + '/')
-
-        # Scroll down depth-times and wait delay seconds to load
-        # between scrolls
-        for scroll in range(self.depth):
-
-            # Scroll down to bottom
-            self.browser.execute_script(
-                "window.scrollTo(0, document.body.scrollHeight);")
-
-            # Wait to load page
-            time.sleep(self.delay)
+        links = self.browser.find_elements_by_link_text("See more")
+        for link in links:
+            link.click()
 
         # Once the full page is loaded, we can start scraping
-        with open(self.dump, "a+", newline='', encoding="utf-8") as save_file:
-            writer = csv.writer(save_file)
-            links = self.browser.find_elements_by_link_text("See more")
-            for link in links:
-                link.click()
-            posts = self.browser.find_elements_by_class_name(
-                "userContentWrapper")
-            poster_names = self.browser.find_elements_by_xpath(
-                "//a[@data-hovercard-referer]")
+        return Post.InFeed.getAll(self.browser)
 
-            for count, post in enumerate(posts):
-                # Creating first CSV row entry with the poster name (eg. "Donald Trump")
-                analysis = [poster_names[count].text]
+    def readPagePosts(self, pageName):
+        return self.readPosts(self.rootUrl + pageName + '/')
 
-                # Creating a time entry.
-                time_element = post.find_element_by_css_selector("abbr")
-                utime = time_element.get_attribute("data-utime")
-                analysis.append(utime)
-
-                # Creating post text entry
-                text = post.find_element_by_class_name("userContent").text
-                status = self.strip(text)
-                analysis.append(status)
-
-                # Write row to csv
-                writer.writerow(analysis)
-
-    def collect(self, typ):
-        if typ == "groups":
-            for iden in self.ids:
-                self.collect_groups(iden)
-        elif typ == "pages":
-            for iden in self.ids:
-                self.collect_page(iden)
-        self.browser.close()
+    def readGroupPosts(self, groupId):
+        return self.readPosts(self.rootUrl + "groups/" + groupId + '/')
 
     def safe_find_element_by_id(self, elem_id):
         try:
@@ -214,6 +137,14 @@ class CollectPosts(object):
             print(sys.exc_info()[0])
             exit()
 
+# Once the full page is loaded, we can start scraping
+def postsToCsvFile(posts, filePath):
+    # creating CSV header
+    with open(filePath, "w", newline='', encoding="utf-8") as save_file:
+        writer = csv.writer(save_file)
+        writer.writerow(["Author", "uTime", "Text"])
+        for post in posts:
+            writer.writerow([post.user.name, post.time, post.status])
 
 if __name__ == "__main__":
 
@@ -225,12 +156,17 @@ if __name__ == "__main__":
             print(
                 "Your email or password is missing. Kindly write them in credentials.txt")
             exit()
+    reader = PostReader(depth=args.depth)
+    reader.login(email, password)
+    posts = []
+    if args.postUrl:
+        posts.append(reader.getPost(args.postUrl))
+    else:
+        if args.groups:
+            for groupId in args.groups:
+                posts.extend([Post(rep) for rep in reader.readGroupPosts(groupId)])
+        if args.pages:
+            for pageName in args.pages:
+                posts.extend([Post(rep) for rep in reader.readPagePosts(pageName)])
 
-    if args.groups:
-        C = CollectPosts(ids=args.groups, depth=args.depth)
-        C.login(email, password)
-        C.collect("groups")
-    elif args.pages:
-        C = CollectPosts(ids=args.pages, depth=args.depth)
-        C.login(email, password)
-        C.collect("pages")
+    postsToCsvFile(posts,"posts.csv")

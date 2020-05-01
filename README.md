@@ -9,6 +9,8 @@ Firstly, make sure you have selenium >= 3.141.0, GeckoDriver and FireFox install
 
 Store your email and password for Facebook login in credentials.txt.
 
+Make sure the variables BROWSER_EXE and GECKODRIVER in the script are set to the locations of the firefox and geckodriver executables, respectively.  On Mac, the firefox executable is at `/Applications/Firefox.app/Contents/MacOS/firefox-bin` by default.
+
 Use `scraper.py` to collect the data. 
 ```
 usage: scrape.py [-h] [--pages PAGES [PAGES ...]] [--groups GROUPS [GROUPS ...]][-d DEPTH]
@@ -32,4 +34,3 @@ ____
 The output is `posts.csv` inside the script folder.
 
 Output is in three columns: PosterName(Author), uTime and Text
-

@@ -2,11 +2,12 @@ from selenium import webdriver
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from Post import Post
+from Post import PollPost
 import sys
 import time
 import argparse
 import csv
-import calendar
+import json
 
 parser = argparse.ArgumentParser(description='Non API public FB miner')
 
@@ -25,6 +26,15 @@ parser.add_argument("-d", "--depth", action="store",
 parser.add_argument("-u", "--postUrl", action="store",
                     dest="postUrl",
                     help="Url of single post")
+
+parser.add_argument("-l", "--pollPostUrl", action="store",
+                    dest="pollPostUrl",
+                    help="Url of a single post containing a poll")
+
+parser.add_argument("-m", "--monitorPost", action="store",
+                    dest="monitorPostUrl",
+                    help="Url of single post")
+
 args = parser.parse_args()
 
 BROWSER_EXE = '/Applications/Firefox.app/Contents/MacOS/firefox-bin'
@@ -58,6 +68,7 @@ class PostReader(object):
                                          firefox_binary=FIREFOX_BINARY,
                                          firefox_profile=PROFILE,)
 
+
     def readPost(self, url=None, path=None, groupId=None, postId=None):
         if not (url is None):
             self.browser.get(url)
@@ -65,8 +76,16 @@ class PostReader(object):
             self.browser.get(self.rootUrl+path)
         else:
             self.browser.get(self.rootURL+"groups/"+groupId+"/permalink/"+postId)
-        return Post.inFeed.get(self.browser)
+        return Post.InFeed.get(self.browser)
 
+    def readPostAs(self, representation, url=None, path=None, groupId=None, postId=None):
+        if not (url is None):
+            self.browser.get(url)
+        elif not (path is None):
+            self.browser.get(self.rootUrl+path)
+        else:
+            self.browser.get(self.rootURL+"groups/"+groupId+"/permalink/"+postId)
+        return representation.get(self.browser)
 
     def readPosts(self, url):
         # navigate to page
@@ -144,7 +163,7 @@ def postsToCsvFile(posts, filePath):
         writer = csv.writer(save_file)
         writer.writerow(["Author", "uTime", "Text"])
         for post in posts:
-            writer.writerow([post.user.name, post.time, post.status])
+            writer.writerow([post.user.name, post.time, post.content])
 
 if __name__ == "__main__":
 
@@ -159,8 +178,12 @@ if __name__ == "__main__":
     reader = PostReader(depth=args.depth)
     reader.login(email, password)
     posts = []
-    if args.postUrl:
-        posts.append(reader.getPost(args.postUrl))
+    if args.pollPostUrl:
+        postRep = reader.readPostAs(PollPost.PostInFeed, url=args.pollPostUrl)
+        pollPost = PollPost(postRep)
+        posts.append(pollPost)
+    elif args.postUrl:
+        posts.append(Post(reader.readPost(args.postUrl)))
     else:
         if args.groups:
             for groupId in args.groups:

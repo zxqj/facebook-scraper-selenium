@@ -2,6 +2,8 @@ from RepresentedObject import RepresentedObject
 from Representation import Representation
 from Poll import Poll
 from User import User
+from Json import encode
+
 def strip(string):
     """Helping function to remove all non alphanumeric characters"""
     words = string.split()
@@ -90,4 +92,4 @@ if __name__ == "__main__":
     posterUser = User(name="Garrett Baca")
     poll = Poll(votes=dict({"Patrick": ["Michelle", "Richard"]}), poster=posterUser)
     pollPost = PollPost(user=user, time=333352352, content="Some facebook post content", poll=poll)
-    print(pollPost.toJson())
+    print(encode(pollPost))

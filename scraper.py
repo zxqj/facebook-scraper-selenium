@@ -7,7 +7,7 @@ import sys
 import time
 import argparse
 import csv
-import json
+from Json import encode
 
 parser = argparse.ArgumentParser(description='Non API public FB miner')
 
@@ -156,15 +156,6 @@ class PostReader(object):
             print(sys.exc_info()[0])
             exit()
 
-# Once the full page is loaded, we can start scraping
-def postsToCsvFile(posts, filePath):
-    # creating CSV header
-    with open(filePath, "w", newline='', encoding="utf-8") as save_file:
-        writer = csv.writer(save_file)
-        writer.writerow(["Author", "uTime", "Text"])
-        for post in posts:
-            writer.writerow([post.user.name, post.time, post.content])
-
 if __name__ == "__main__":
 
     with open('credentials.txt') as f:
@@ -192,4 +183,4 @@ if __name__ == "__main__":
             for pageName in args.pages:
                 posts.extend([Post(rep) for rep in reader.readPagePosts(pageName)])
 
-    postsToCsvFile(posts,"posts.csv")
+    print(encode(posts))

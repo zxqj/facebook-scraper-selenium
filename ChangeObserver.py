@@ -19,17 +19,19 @@ class ChangeObserver(object):
     def generateAndTimeNextState(self):
         start = time.time()
         res = self.generateNextState()
-        return res, int(time.time() - start)
+        print(str(int(time.time() - start)) + "s")
+        return res
 
     def run(self):
         while (True):
             if (self.lastState is None):
-                res, time = self.generateAndTimeNextState()
-                print(str(time)+"s")
+                res = self.generateAndTimeNextState()
                 self.newState = self.lastState = res
                 time.sleep(self.delay)
                 continue
             self.lastState = self.newState
+            ## use to time each website check
+            # self.newState = self.generateAndTimeNextState()
             self.newState = self.generateNextState()
             if not (self.newState == self.lastState):
                 self.callback(self.describeChange(self.lastState, self.newState))

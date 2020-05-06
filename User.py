@@ -1,5 +1,7 @@
 from RepresentedObject import RepresentedObject
 from Representation import Representation
+from util import FancyDriver
+
 
 class TextLinkRep(Representation):
 
@@ -38,7 +40,7 @@ class CirclePictureRep(Representation):
 
     @staticmethod
     def getAll(rootNode):
-        nodes = rootNode.find_elements_by_xpath(".//a[@data-hovercard][child::img]")
+        nodes = FancyDriver(rootNode).query_for_elements_until_present(".//a[@data-hovercard][child::img]", timeout=60)
         return [CirclePictureRep(node) for node in nodes]
 
 

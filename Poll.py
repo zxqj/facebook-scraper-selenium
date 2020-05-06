@@ -1,11 +1,9 @@
-from selenium.common.exceptions import ElementNotInteractableException
-
-import Browser
 from Representation import Representation
 from RepresentedObject import RepresentedObject
 from functools import reduce
 from User import User
-import time
+from util import FancyDriver
+
 
 class InPostRepresentation(Representation):
     def __init__(self, node):
@@ -21,23 +19,16 @@ class InPostRepresentation(Representation):
             valuesParent = pollOptionSplitter.find_elements_by_xpath("./following-sibling::div")[0]
             users = [User(rep) for rep in User.CirclePicture.getAll(valuesParent)]
             moreVotersDialogButton = valuesParent.find_elements_by_xpath('.//a[contains(@href,"browse/option_voters")]')
+
             if (not (moreVotersDialogButton == None)) and len(moreVotersDialogButton) > 0:
                 moreVotersDialogButton = moreVotersDialogButton[0]
-                try:
-                    moreVotersDialogButton.click()
-                except ElementNotInteractableException:
-                    driver = Browser.get()
-                    imageFile="error_"+str(time.time())+".png"
-                    driver.save_screenshot(imageFile)
-                    print(moreVotersDialogButton.get_attribute('innerHTML'))
-
-                time.sleep(10)
+                FancyDriver(self.node).force_interaction(lambda: moreVotersDialogButton.click())
                 xpathexpr = '//div[contains(@class,"profileBrowserDialog")]'
-                dialogNode = self.node.find_elements_by_xpath(xpathexpr)[0]
+                dialogNode = FancyDriver(self.node).query_for_element_until_present(xpathexpr, timeout=60)
                 users = [User(rep=rep) for rep in User.CirclePicture.getAll(dialogNode)]
                 dialogNode.find_elements_by_xpath('.//a[contains(@data-testid, "dialog_title_close_button")]')[0].click()
-                time.sleep(10)
 
+            #print(optionInputValue +": ["+ reduce(lambda x,y: x+", " + y, map(lambda user: user.name, users))+"]ß")
             dataObject.votes[optionInputValue] = users
 
     @staticmethod

@@ -1,7 +1,5 @@
-from selenium import webdriver
-from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
-
+from datetime import datetime
+from selenium.common.exceptions import NoSuchElementException
 import Browser
 from Post import Post
 from Post import PollPost
@@ -159,7 +157,10 @@ if __name__ == "__main__":
     if args.monitorPollPostUrl:
         postRep = reader.readPostAs(PollPost.PostInFeed, url=args.monitorPollPostUrl)
         def callback(changeDescription):
-            print(changeDescription)
+            print(datetime.now().strftime("%m-%d %H:%M:%S"))
+            for change in changeDescription:
+                print(change)
+            print("")
         changeObserver = PollPostChangeObserver(0, callback, reader, args.monitorPollPostUrl)
         changeObserver.run()
         exit()

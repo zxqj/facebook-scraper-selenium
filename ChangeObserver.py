@@ -1,4 +1,3 @@
-import Json
 from Poll import Poll
 from User import User
 from functools import reduce
@@ -17,10 +16,17 @@ class ChangeObserver(object):
     def describeChange(self, x1, x2):
         pass
 
+    def generateAndTimeNextState(self):
+        start = time.time()
+        res = self.generateNextState()
+        return res, int(time.time() - start)
+
     def run(self):
         while (True):
             if (self.lastState is None):
-                self.newState = self.lastState = self.generateNextState()
+                res, time = self.generateAndTimeNextState()
+                print(str(time)+"s")
+                self.newState = self.lastState = res
                 time.sleep(self.delay)
                 continue
             self.lastState = self.newState
@@ -34,11 +40,9 @@ class PollPostChangeObserver(ChangeObserver):
         super().__init__(delay, callback)
         self.reader = reader
         self.pollPostUrl = pollPostUrl
-
     def generateNextState(self):
         postRep = self.reader.readPostAs(PollPost.PostInFeed, url=self.pollPostUrl)
         poll = PollPost(postRep).poll
-        print(Json.encode(poll))
         return poll
 
     def describeChange(self, poll1, poll2):

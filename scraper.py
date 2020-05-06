@@ -143,14 +143,12 @@ class PostReader(object):
             exit()
 
 if __name__ == "__main__":
-
-    with open('credentials.txt') as f:
-        email = LOGIN_EMAIL
-        password = LOGIN_PASSWORD
-        if email == "" or password == "":
-            print(
-                "Your email or password is missing. Kindly write them in credentials.txt")
-            exit()
+    email = LOGIN_EMAIL
+    password = LOGIN_PASSWORD
+    if email == "" or password == "":
+        print(
+            "Your email or password is missing. These must both be in conf.py")
+        exit()
     reader = PostReader(depth=args.depth)
     reader.login(email, password)
     posts = []

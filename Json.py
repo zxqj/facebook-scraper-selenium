@@ -1,7 +1,6 @@
-from json import JSONEncoder
 import json
 
-class Encoder(JSONEncoder):
+class Encoder(json.JSONEncoder):
     def default(self, o):
         return o.__dict__
 

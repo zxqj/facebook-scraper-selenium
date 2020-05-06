@@ -47,7 +47,7 @@ class PollPostRepresentation(InFeedRepresentation):
     def createObject(self, dataObject=None):
         super().createObject(dataObject)
         pollRep = Poll.InPost.get(self.node.parent)
-        dataObject.poll = Poll(pollRep)
+        dataObject.poll = Poll(rep=pollRep)
 
     @staticmethod
     def get(rootNode):
@@ -66,11 +66,8 @@ class Post(RepresentedObject):
         self.content = content
         super().__init__(rep)
 
-    def didChange(self, otherPost):
-        return not(self.user.name is otherPost.user.name and self.time is otherPost.time and self.content is otherPost.content and self.status is otherPost.status)
-
-    def __str__(self):
-        '\{ user: {self.user}, time: {self.time: %d}, content: "{self.content}", status: "{self.status}" \}'.format(self=self)
+    def __eq__(self, otherPost):
+        return self.user == otherPost.user and self.time == otherPost.time and self.content == otherPost.content
 
 class PollPost(Post):
     PostInFeed = PollPostRepresentation
@@ -78,13 +75,8 @@ class PollPost(Post):
         self.poll = poll
         super().__init__(rep=rep, user=user, time=time, content=content)
 
-    def didChange(self, otherPost):
-        return super().didChange(otherPost) or self.poll.didChange(otherPost.poll)
-
-    def __str__(self):
-        superStr = '{super}'.format(super=super())
-        superStr = superStr[:len(superStr)-2]
-        return '\{ {super}, poll: {self.poll} \}'.format(super=superStr, self=self)
+    def __eq__(self, otherPost):
+        return super() == otherPost and self.poll == otherPost.poll
 
 
 if __name__ == "__main__":

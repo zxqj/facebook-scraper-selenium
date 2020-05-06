@@ -1,7 +1,7 @@
 from RepresentedObject import RepresentedObject
 from Representation import Representation
 
-class CirclePictureRep(Representation):
+class TextLinkRep(Representation):
 
     def __init__(self, node):
         super().__init__(node)
@@ -11,29 +11,35 @@ class CirclePictureRep(Representation):
 
     @staticmethod
     def get(rootNode):
-        return Representation.get(rootNode, CirclePictureRep)
+        return Representation.get(rootNode, TextLinkRep)
 
     @staticmethod
     def getAll(rootNode):
-        nodes = rootNode.find_elements_by_xpath(".//a[@data-hovercard-referer]")
-        return [CirclePictureRep(node) for node in nodes]
+        nodes = rootNode.find_elements_by_xpath(".//a[@data-hovercard][child::text()]")
+        return [TextLinkRep(node) for node in nodes]
 
-class SmallCirclePictureRep(Representation):
+class CirclePictureRep(Representation):
 
     def __init__(self, node):
         super().__init__(node)
 
     def createObject(self, dataObj):
-        dataObj.name = self.node.get_attribute('aria-label')
+        # username set on aria-label attribute of small pictures next to polls
+        maybeName = self.node.get_attribute('aria-label')
+        if (maybeName is None):
+            # username set on aria-label of img element inside of a tag for post-heading user pic and sidebar user pics
+            imgNodes = self.node.find_elements_by_xpath("./img[@aria-label]")
+            maybeName = imgNodes[0].get_attribute('aria-label')
+        dataObj.name = maybeName
 
     @staticmethod
     def get(rootNode):
-        return Representation.get(rootNode, SmallCirclePictureRep)
+        return Representation.get(rootNode, CirclePictureRep)
 
     @staticmethod
     def getAll(rootNode):
-        nodes = rootNode.find_elements_by_xpath(".//a[@data-hovercard]")
-        return [SmallCirclePictureRep(node) for node in nodes]
+        nodes = rootNode.find_elements_by_xpath(".//a[@data-hovercard][child::img]")
+        return [CirclePictureRep(node) for node in nodes]
 
 
 # we will try to implement this so that a user object can be created 
@@ -42,14 +48,23 @@ class SmallCirclePictureRep(Representation):
 # sometimes both
 class User(RepresentedObject):
     CirclePicture = CirclePictureRep
-    SmallCirclePicture = SmallCirclePictureRep
+    TextLink = TextLinkRep
     def __init__(self, rep=None, name=None):
         self.name = name
         super().__init__(rep)
 
-    def didChange(self, otherUser):
+    def __eq__(self, otherUser):
         # TODO: extract ids and make this better
-        return not (self.name is otherUser.name)
+        return self.name == otherUser.name
 
-    def __str__(self):
-        return '\{ name: "{self.name}" \}'.format(self=self)
+    def __lt__(self, otherUser):
+        return self.name < otherUser.name
+
+    def __le__(self, otherUser):
+        return self.__lt__(otherUser) or self.__eq__(otherUser)
+
+    def __gt__(self, otherUser):
+        return not self.__lt__(otherUser)
+
+    def __ge__(self, otherUser):
+        return self.__gt__(otherUser) or self.__eq__(otherUser)

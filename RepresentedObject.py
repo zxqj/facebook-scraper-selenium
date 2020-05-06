@@ -1,4 +1,4 @@
-import json
+import Json
 
 class RepresentedObject(object):
     def __init__(self, representation):
@@ -6,5 +6,4 @@ class RepresentedObject(object):
             representation.createObject(self)
 
     def toJson(self):
-        return json.dumps(self, default=lambda o: o.__dict__,
-                          sort_keys=True, indent=4)
+        return Json.encode(self)

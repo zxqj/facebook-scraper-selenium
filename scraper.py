@@ -1,13 +1,16 @@
 from selenium import webdriver
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
+
+import Browser
 from Post import Post
 from Post import PollPost
 import sys
 import time
 import argparse
-import csv
 from Json import encode
+from ChangeObserver import PollPostChangeObserver
+from conf import LOGIN_PASSWORD, LOGIN_EMAIL
 
 parser = argparse.ArgumentParser(description='Non API public FB miner')
 
@@ -31,24 +34,11 @@ parser.add_argument("-l", "--pollPostUrl", action="store",
                     dest="pollPostUrl",
                     help="Url of a single post containing a poll")
 
-parser.add_argument("-m", "--monitorPost", action="store",
-                    dest="monitorPostUrl",
-                    help="Url of single post")
+parser.add_argument("-m", "--monitorPollPost", action="store",
+                    dest="monitorPollPostUrl",
+                    help="Url of single post containing a poll, which you want to monitor")
 
 args = parser.parse_args()
-
-BROWSER_EXE = '/Applications/Firefox.app/Contents/MacOS/firefox-bin'
-GECKODRIVER = '/usr/local/bin/geckodriver'
-
-FIREFOX_BINARY = FirefoxBinary(BROWSER_EXE)
-
-#  Code to disable notifications pop up of Chrome Browser
-
-PROFILE = webdriver.FirefoxProfile()
-# PROFILE.DEFAULT_PREFERENCES['frozen']['javascript.enabled'] = False
-PROFILE.set_preference("dom.webnotifications.enabled", False)
-PROFILE.set_preference("app.update.enabled", False)
-PROFILE.update_preferences()
 
 class PostReader(object):
     """Collector of recent FaceBook posts.
@@ -64,9 +54,7 @@ class PostReader(object):
         self.delay = delay
         self.rootUrl = "https://www.facebook.com/"
         # browser instance
-        self.browser = webdriver.Firefox(executable_path=GECKODRIVER,
-                                         firefox_binary=FIREFOX_BINARY,
-                                         firefox_profile=PROFILE,)
+        self.browser = Browser.get()
 
 
     def readPost(self, url=None, path=None, groupId=None, postId=None):
@@ -159,9 +147,8 @@ class PostReader(object):
 if __name__ == "__main__":
 
     with open('credentials.txt') as f:
-        email = f.readline().split('"')[1]
-        password = f.readline().split('"')[1]
-
+        email = LOGIN_EMAIL
+        password = LOGIN_PASSWORD
         if email == "" or password == "":
             print(
                 "Your email or password is missing. Kindly write them in credentials.txt")
@@ -169,7 +156,14 @@ if __name__ == "__main__":
     reader = PostReader(depth=args.depth)
     reader.login(email, password)
     posts = []
-    if args.pollPostUrl:
+    if args.monitorPollPostUrl:
+        postRep = reader.readPostAs(PollPost.PostInFeed, url=args.monitorPollPostUrl)
+        def callback(changeDescription):
+            print(changeDescription)
+        changeObserver = PollPostChangeObserver(0, callback, reader, args.monitorPollPostUrl)
+        changeObserver.run()
+        exit()
+    elif args.pollPostUrl:
         postRep = reader.readPostAs(PollPost.PostInFeed, url=args.pollPostUrl)
         pollPost = PollPost(postRep)
         posts.append(pollPost)

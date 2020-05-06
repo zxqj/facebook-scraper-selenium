@@ -14,6 +14,8 @@ def get():
         PROFILE.update_preferences()
         firefoxOptions = webdriver.FirefoxOptions()
         firefoxOptions.headless = True
+        firefoxOptions.add_argument("--width=1920`")
+        firefoxOptions.add_argument("--height=1080")
         Browser.inst = webdriver.Firefox(executable_path=GECKODRIVER,
                                          firefox_binary=FIREFOX_BINARY,
                                          firefox_profile=PROFILE,

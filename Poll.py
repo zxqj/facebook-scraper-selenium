@@ -1,3 +1,5 @@
+from selenium.common.exceptions import ElementNotInteractableException
+
 import Browser
 from Representation import Representation
 from RepresentedObject import RepresentedObject
@@ -21,10 +23,14 @@ class InPostRepresentation(Representation):
             moreVotersDialogButton = valuesParent.find_elements_by_xpath('.//a[contains(@href,"browse/option_voters")]')
             if (not (moreVotersDialogButton == None)) and len(moreVotersDialogButton) > 0:
                 moreVotersDialogButton = moreVotersDialogButton[0]
-                # we must scroll once after we exit the dialog box, this might need to be made more robust
-                Browser.get().execute_script(
-                    "window.scrollTo(0, document.body.scrollHeight);")
-                moreVotersDialogButton.click()
+                try:
+                    moreVotersDialogButton.click()
+                except ElementNotInteractableException:
+                    driver = Browser.get()
+                    imageFile="error_"+str(time.time())+".png"
+                    driver.save_screenshot(imageFile)
+                    print(moreVotersDialogButton.get_attribute('innerHTML'))
+
                 time.sleep(10)
                 xpathexpr = '//div[contains(@class,"profileBrowserDialog")]'
                 dialogNode = self.node.find_elements_by_xpath(xpathexpr)[0]

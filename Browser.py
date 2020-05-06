@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from conf import BROWSER_EXE,GECKODRIVER
 FIREFOX_BINARY = FirefoxBinary(BROWSER_EXE)
+
 class Browser:
     inst = None
 

@@ -9,6 +9,7 @@ import argparse
 from Json import encode
 from ChangeObserver import PollPostChangeObserver
 from conf import LOGIN_PASSWORD, LOGIN_EMAIL
+from output import informUser, log_exceptions
 
 parser = argparse.ArgumentParser(description='Non API public FB miner')
 
@@ -142,9 +143,8 @@ class PostReader(object):
             print(sys.exc_info()[0])
             exit()
 
-if __name__ == "__main__":
-    email = LOGIN_EMAIL
-    password = LOGIN_PASSWORD
+@log_exceptions
+def run(args, email, password):
     if email == "" or password == "":
         print(
             "Your email or password is missing. These must both be in conf.py")
@@ -152,13 +152,13 @@ if __name__ == "__main__":
     reader = PostReader(depth=args.depth)
     reader.login(email, password)
     posts = []
+
     if args.monitorPollPostUrl:
         postRep = reader.readPostAs(PollPost.PostInFeed, url=args.monitorPollPostUrl)
         def callback(changeDescription):
-            print(datetime.now().strftime("%m-%d %H:%M:%S"))
-            for change in changeDescription:
-                print(change)
-            print("")
+            informUser(datetime.now().strftime("%m-%d %H:%M:%S"))
+            informUser(*changeDescription)
+            informUser("")
         changeObserver = PollPostChangeObserver(0, callback, reader, args.monitorPollPostUrl)
         changeObserver.run()
         exit()
@@ -176,4 +176,6 @@ if __name__ == "__main__":
             for pageName in args.pages:
                 posts.extend([Post(rep) for rep in reader.readPagePosts(pageName)])
 
-    print(encode(posts))
+    informUser(encode(posts))
+if __name__ == "__main__":
+    run(args, LOGIN_EMAIL, LOGIN_PASSWORD)

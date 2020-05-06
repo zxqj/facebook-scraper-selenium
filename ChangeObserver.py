@@ -3,6 +3,7 @@ from User import User
 from functools import reduce
 from Post import PollPost
 import time
+from output import debug
 
 class ChangeObserver(object):
     def __init__(self, delay, callback):
@@ -19,7 +20,7 @@ class ChangeObserver(object):
     def generateAndTimeNextState(self):
         start = time.time()
         res = self.generateNextState()
-        print(str(int(time.time() - start)) + "s")
+        debug("check completed ("+str(int(time.time() - start)) + "s)")
         return res
 
     def run(self):
@@ -30,21 +31,25 @@ class ChangeObserver(object):
                 time.sleep(self.delay)
                 continue
             self.lastState = self.newState
-            ## use to time each website check
-            # self.newState = self.generateAndTimeNextState()
-            self.newState = self.generateNextState()
+            self.newState = self.generateAndTimeNextState()
             if not (self.newState == self.lastState):
                 self.callback(self.describeChange(self.lastState, self.newState))
             time.sleep(self.delay)
+
+def formatPollOption(option, voters):
+    voterString = reduce(lambda x,y: x+", "+y, map(lambda u: u.name, voters))
+    return '{o}: {v}'.format(o=option, v=voterString)
 
 class PollPostChangeObserver(ChangeObserver):
     def __init__(self, delay, callback, reader, pollPostUrl):
         super().__init__(delay, callback)
         self.reader = reader
         self.pollPostUrl = pollPostUrl
+
     def generateNextState(self):
         postRep = self.reader.readPostAs(PollPost.PostInFeed, url=self.pollPostUrl)
         poll = PollPost(postRep).poll
+        debug(*[formatPollOption(option, voters) for option, voters in poll.votes.items()])
         return poll
 
     def describeChange(self, poll1, poll2):

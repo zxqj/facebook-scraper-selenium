@@ -1,11 +1,25 @@
 import time
 
-from selenium.common.exceptions import ElementNotInteractableException, ElementClickInterceptedException
+from selenium.common.exceptions import ElementNotInteractableException, ElementClickInterceptedException, \
+    NoSuchElementException
+
+import Browser
 
 
 class FancyDriver:
-    def __init__(self, driver):
+    def __init__(self, driver=None):
+        if (driver == None):
+            driver=Browser.get()
         self.driver = driver
+
+    def __getattr__(self, name):
+        return self.driver.__dict__[name]
+
+    def safe_find_element_by_id(self, elem_id, browser=None):
+        try:
+            return self.driver.find_element_by_id(elem_id)
+        except NoSuchElementException:
+            return None
 
     def query_for_elements_until_present(self, xpath, failWaitSeconds=.05, timeout=60):
         starttime = time.time()

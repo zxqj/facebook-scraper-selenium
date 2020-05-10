@@ -1,7 +1,7 @@
-from Representation import Representation
-from RepresentedObject import RepresentedObject
+from models.Representation import Representation
+from models.RepresentedObject import RepresentedObject
 from functools import reduce
-from User import User
+from models.User import User
 from util import FancyDriver
 
 
@@ -9,7 +9,7 @@ class InPostRepresentation(Representation):
     def __init__(self, node):
         super().__init__(node)
 
-    def createObject(self, dataObject):
+    def create_object(self, dataObject):
         dataObject.votes = dict()
         pollOptionSplitters = self.node.find_elements_by_xpath(".//div[text()='Voters for this option']")
         for pollOptionSplitter in pollOptionSplitters:
@@ -17,7 +17,7 @@ class InPostRepresentation(Representation):
             optionInput = optionParent.find_elements_by_tag_name('input')[0]
             optionInputValue = optionInput.get_attribute('aria-label')
             valuesParent = pollOptionSplitter.find_elements_by_xpath("./following-sibling::div")[0]
-            users = [User(rep) for rep in User.CirclePicture.getAll(valuesParent)]
+            users = [User(rep) for rep in User.CirclePicture.get_all(valuesParent)]
             moreVotersDialogButton = valuesParent.find_elements_by_xpath('.//a[contains(@href,"browse/option_voters")]')
 
             if (not (moreVotersDialogButton == None)) and len(moreVotersDialogButton) > 0:
@@ -25,7 +25,7 @@ class InPostRepresentation(Representation):
                 FancyDriver(self.node).force_interaction(lambda: moreVotersDialogButton.click())
                 xpathexpr = '//div[contains(@class,"profileBrowserDialog")]'
                 dialogNode = FancyDriver(self.node).query_for_element_until_present(xpathexpr, timeout=60)
-                users = [User(rep=rep) for rep in User.CirclePicture.getAll(dialogNode)]
+                users = [User(rep=rep) for rep in User.CirclePicture.get_all(dialogNode)]
                 dialogNode.find_elements_by_xpath('.//a[contains(@data-testid, "dialog_title_close_button")]')[0].click()
 
             #print(optionInputValue +": ["+ reduce(lambda x,y: x+", " + y, map(lambda user: user.name, users))+"]ß")
@@ -33,11 +33,11 @@ class InPostRepresentation(Representation):
 
     @staticmethod
     def get(rootNode):
-        nodes = InPostRepresentation.getAll(rootNode)
+        nodes = InPostRepresentation.get_all(rootNode)
         return None if len(nodes) == 0 else nodes[0]
 
     @staticmethod
-    def getAll(rootNode):
+    def get_all(rootNode):
         return [InPostRepresentation(node) for node in rootNode.find_elements_by_class_name("mtm")]
 
 class Poll(RepresentedObject):
@@ -66,21 +66,21 @@ class Poll(RepresentedObject):
 
 
 if __name__ == "__main__":
-    def runTest(votes1, votes2, truthVal):
+    def run_test(votes1, votes2, truthVal):
         poll1 = Poll(votes=votes1)
         poll2 = Poll(votes=votes2)
         assert truthVal is (poll1 == poll2)
 
-    runTest({"Michelle": ["Patrick"], "Richard": []},
-            {"Michelle": ["Patrick"], "Richard": ["Patrick"]}, False)
-    runTest({"Michelle": ["Patrick"], "Richard": ["Patrick"]},
-            {"Michelle": ["Patrick"], "Richard": ["Patrick"]}, True)
-    runTest({"Michelle": ["Patrick"], "Richard": []},
-            {"Michelle": [], "Richard": ["Patrick"]}, False)
-    runTest({"Michelle": ["Patrick"]},
-            {"Richard": ["Patrick"]}, False)
-    runTest({ "Renee": ["Maria", "Chuck", "Joe", "Keri", "Angela", "Christopher", "Jim"],
+    run_test({"Michelle": ["Patrick"], "Richard": []},
+             {"Michelle": ["Patrick"], "Richard": ["Patrick"]}, False)
+    run_test({"Michelle": ["Patrick"], "Richard": ["Patrick"]},
+             {"Michelle": ["Patrick"], "Richard": ["Patrick"]}, True)
+    run_test({"Michelle": ["Patrick"], "Richard": []},
+             {"Michelle": [], "Richard": ["Patrick"]}, False)
+    run_test({"Michelle": ["Patrick"]},
+             {"Richard": ["Patrick"]}, False)
+    run_test({"Renee": ["Maria", "Chuck", "Joe", "Keri", "Angela", "Christopher", "Jim"],
               "Michelle": ["Richard", "Steven", "Molly", "Jennifer", "Renee", "Dianne"],
-              "Joe": ["Patrick"] },
-            { "Renee": ["Maria", "Chuck", "Joe", "Keri", "Angela", "Christopher", "Jim", "Steven"],
+              "Joe": ["Patrick"]},
+             { "Renee": ["Maria", "Chuck", "Joe", "Keri", "Angela", "Christopher", "Jim", "Steven"],
               "Michelle": ["Richard", "Molly", "Jennifer", "Renee", "Dianne", "Patrick"] }, False)

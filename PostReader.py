@@ -1,28 +1,23 @@
 import time
 
 import Browser
-from Post import Post
+from models.Post import Post
 
 
 class PostReader(object):
-    """Collector of recent FaceBook posts.
-           Note: We bypass the FaceBook-Graph-API by using a
-           selenium FireFox instance!
-           This is against the FB guide lines and thus not allowed.
-
-           USE THIS FOR EDUCATIONAL PURPOSES ONLY. DO NOT ACTAULLY RUN IT.
-    """
-
-    def __init__(self, depth=5, delay=2, browser=None):
-        self.depth = depth + 1
+    # Collector of recent FaceBook posts.
+    # browser object is a reference to a selenium WebDriver through which
+    # a user has already logged into Facebook
+    def __init__(self, scrollDepth=5, delay=2, browser=None, readAll=False):
+        self.depth = scrollDepth + 1
         self.delay = delay
+        self.readAll = readAll
         self.rootUrl = "https://www.facebook.com/"
         # browser instance
         if (browser == None):
             self.browser = Browser.get()
 
-
-    def readPost(self, url=None, path=None, groupId=None, postId=None):
+    def read_post(self, url=None, path=None, groupId=None, postId=None):
         if not (url is None):
             self.browser.get(url)
         elif not (path is None):
@@ -31,7 +26,7 @@ class PostReader(object):
             self.browser.get(self.rootURL+"groups/"+groupId+"/permalink/"+postId)
         return Post.InFeed.get(self.browser)
 
-    def readPostAs(self, representation, url=None, path=None, groupId=None, postId=None):
+    def read_post_as(self, representation, url=None, path=None, groupId=None, postId=None):
         if not (url is None):
             self.browser.get(url)
         elif not (path is None):
@@ -40,7 +35,29 @@ class PostReader(object):
             self.browser.get(self.rootURL+"groups/"+groupId+"/permalink/"+postId)
         return representation.get(self.browser)
 
-    def readPosts(self, url):
+    def scroll_all(self):
+        """A method for scrolling through all page."""
+
+        # Get scroll height.
+        last_height = self.browser.execute_script("return document.body.scrollHeight")
+
+        while True:
+
+            # Scroll down to the bottom.
+            self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+            # Wait to load the page.
+            time.sleep(2)
+
+            # Calculate new scroll height and compare with last scroll height.
+            new_height = self.browser.execute_script("return document.body.scrollHeight")
+
+            if new_height == last_height:
+                break
+
+            last_height = new_height
+
+    def read_posts(self, url):
         # navigate to page
         self.browser.get(url)
 
@@ -60,10 +77,10 @@ class PostReader(object):
             link.click()
 
         # Once the full page is loaded, we can start scraping
-        return Post.InFeed.getAll(self.browser)
+        return Post.InFeed.get_all(self.browser)
 
-    def readPagePosts(self, pageName):
-        return self.readPosts(self.rootUrl + pageName + '/')
+    def read_page_posts(self, pageName):
+        return self.read_posts(self.rootUrl + pageName + '/')
 
-    def readGroupPosts(self, groupId):
-        return self.readPosts(self.rootUrl + "groups/" + groupId + '/')
+    def read_group_posts(self, groupId):
+        return self.read_posts(self.rootUrl + "groups/" + groupId + '/')

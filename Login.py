@@ -1,6 +1,10 @@
+import sys
+
 from selenium.common.exceptions import NoSuchElementException
 
 import Browser
+from util import FancyDriver
+
 
 def login(email, password, browser=None):
     if (browser == None):
@@ -16,7 +20,7 @@ def login(email, password, browser=None):
         # clicking on login button
         browser.find_element_by_id('loginbutton').click()
         # if your account uses multi factor authentication
-        mfa_code_input = self.safe_find_element_by_id('approvals_code')
+        mfa_code_input = FancyDriver(browser).safe_find_element_by_id('approvals_code')
 
         if mfa_code_input is None:
             return
@@ -25,8 +29,8 @@ def login(email, password, browser=None):
         browser.find_element_by_id('checkpointSubmitButton').click()
 
         # there are so many screens asking you to verify things. Just skip them all
-        while safe_find_element_by_id('checkpointSubmitButton') is not None:
-            dont_save_browser_radio = safe_find_element_by_id('u_0_3')
+        while FancyDriver(browser).safe_find_element_by_id('checkpointSubmitButton') is not None:
+            dont_save_browser_radio = FancyDriver(browser).safe_find_element_by_id('u_0_3')
             if dont_save_browser_radio is not None:
                 dont_save_browser_radio.click()
 

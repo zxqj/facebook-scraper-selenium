@@ -18,21 +18,28 @@ class decorators:
 def make_output(resource):
     def output(*args, **kwargs):
         prelude = '[{t}]\t'.format(t=datetime.now().strftime('%m/%d %H:%M:%S'))
-        kwargs.update("sep", "\n")
+        kwargs["sep"]= "\n"
         global_args = [prelude, *args]
-        if type(resource) == "str":
+        if type(resource) == str:
             with open(resource, "a") as f:
                 print(*global_args, file=f, **kwargs)
         else:
             print(*global_args, file=resource, **kwargs)
     return output
 
-def informUser(*args, **kwargs):
-    make_output(sys.stdout)(*args, **kwargs)
+d=dict()
+d['informUser'] = make_output(sys.stdout)
+d['debug'] = make_output(sys.stderr)
+
+def inform_user(*args, **kwargs):
+    f = d['informUser']
+    f(*args, **kwargs)
 
 def debug(*args, **kwargs):
-    make_output(sys.stderr)(*args, **kwargs)
+    f = d['debug']
+    f(*args, **kwargs)
 
 def configure(**config):
-    for k, v in config:
-        globals()[k] = make_output(v)
+    for k, v in config.items():
+        d[k] = make_output(v)
+    print(d)

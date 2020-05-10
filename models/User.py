@@ -1,5 +1,5 @@
-from RepresentedObject import RepresentedObject
-from Representation import Representation
+from models.RepresentedObject import RepresentedObject
+from models.Representation import Representation
 from util import FancyDriver
 
 
@@ -8,7 +8,7 @@ class TextLinkRep(Representation):
     def __init__(self, node):
         super().__init__(node)
 
-    def createObject(self, dataObj):
+    def create_object(self, dataObj):
         dataObj.name = self.node.text
 
     @staticmethod
@@ -16,7 +16,7 @@ class TextLinkRep(Representation):
         return Representation.get(rootNode, TextLinkRep)
 
     @staticmethod
-    def getAll(rootNode):
+    def get_all(rootNode):
         nodes = rootNode.find_elements_by_xpath(".//a[@data-hovercard][child::text()]")
         return [TextLinkRep(node) for node in nodes]
 
@@ -25,7 +25,7 @@ class CirclePictureRep(Representation):
     def __init__(self, node):
         super().__init__(node)
 
-    def createObject(self, dataObj):
+    def create_object(self, dataObj):
         # username set on aria-label attribute of small pictures next to polls
         maybeName = self.node.get_attribute('aria-label')
         if (maybeName is None):
@@ -39,7 +39,7 @@ class CirclePictureRep(Representation):
         return Representation.get(rootNode, CirclePictureRep)
 
     @staticmethod
-    def getAll(rootNode):
+    def get_all(rootNode):
         nodes = FancyDriver(rootNode).query_for_elements_until_present(".//a[@data-hovercard][child::img]", timeout=60)
         return [CirclePictureRep(node) for node in nodes]
 

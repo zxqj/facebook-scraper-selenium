@@ -12,9 +12,6 @@ class FancyDriver:
             driver=Browser.get()
         self.driver = driver
 
-    def __getattr__(self, name):
-        return self.driver.__dict__[name]
-
     def safe_find_element_by_id(self, elem_id, browser=None):
         try:
             return self.driver.find_element_by_id(elem_id)

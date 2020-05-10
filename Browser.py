@@ -23,6 +23,6 @@ def get():
                                          firefox_options=firefoxOptions)
     return Browser.inst
 
-def getDialogNode():
+def get_dialog_node():
     browser = get()
     return browser.find_elements_by_xpath(".//div[contains(@class,'profileBrowserDialog')]")[0]

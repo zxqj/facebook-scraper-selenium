@@ -1,7 +1,7 @@
-from RepresentedObject import RepresentedObject
-from Representation import Representation
-from Poll import Poll
-from User import User
+from models.RepresentedObject import RepresentedObject
+from models.Representation import Representation
+from models.Poll import Poll
+from models.User import User
 from Json import encode
 
 def strip(string):
@@ -20,7 +20,7 @@ class InFeedRepresentation(Representation):
     def __init__(self, rootNode):
         super().__init__(rootNode)
 
-    def createObject(self, dataObject=None):
+    def create_object(self, dataObject=None):
         if (dataObject is None):
             dataObject = RepresentedObject()
         userRep = User.CirclePicture.get(self.node)
@@ -36,7 +36,7 @@ class InFeedRepresentation(Representation):
         return Representation.get(rootNode, InFeedRepresentation)
 
     @staticmethod
-    def getAll(rootNode):
+    def get_all(rootNode):
         return [InFeedRepresentation(node) for node in rootNode.find_elements_by_class_name("userContentWrapper")]
 
 
@@ -44,8 +44,8 @@ class PollPostRepresentation(InFeedRepresentation):
     def __init__(self, node):
         super().__init__(node)
 
-    def createObject(self, dataObject=None):
-        super().createObject(dataObject)
+    def create_object(self, dataObject=None):
+        super().create_object(dataObject)
         pollRep = Poll.InPost.get(self.node.parent)
         dataObject.poll = Poll(rep=pollRep)
 
@@ -54,7 +54,7 @@ class PollPostRepresentation(InFeedRepresentation):
         return Representation.get(rootNode, PollPostRepresentation)
 
     @staticmethod
-    def getAll(rootNode):
+    def get_all(rootNode):
         results = rootNode.find_elements_by_class_name("userContentWrapper")
         return [PollPostRepresentation(node) for node in results]
 

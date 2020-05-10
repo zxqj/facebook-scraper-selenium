@@ -1,17 +1,17 @@
 from datetime import datetime
 from Login import login
-from Post import Post
-from Post import PollPost
+from models.Post import Post
+from models.Post import PollPost
 import argparse
 from Json import encode
 from ChangeObserver import PollPostChangeObserver
 from PostReader import PostReader
 from conf import LOGIN_PASSWORD, LOGIN_EMAIL
-from output import informUser, debug, configure
+from output import inform_user, debug, configure
 
 parser = argparse.ArgumentParser(description='Non API public FB miner')
 
-parser.add_argument('-p', '--pages', nargs='+',
+parser.add_argument('-a', '--pages', nargs='+',
                     dest="pages",
                     help="List the pages you want to scrape for recent posts")
 
@@ -27,7 +27,7 @@ parser.add_argument("-u", "--postUrl", action="store",
                     dest="postUrl",
                     help="Url of single post")
 
-parser.add_argument("-l", "--pollPostUrl", action="store",
+parser.add_argument("-p", "--pollPostUrl", action="store",
                     dest="pollPostUrl",
                     help="Url of a single post containing a poll")
 
@@ -51,34 +51,34 @@ def run(args, email, password):
         print(
             "Your email or password is missing. These must both be in conf.py")
         exit()
-    reader = PostReader(depth=args.depth)
+    reader = PostReader(scrollDepth=args.depth)
     login(email, password)
     posts = []
 
     if args.monitorPollPostUrl:
-        postRep = reader.readPostAs(PollPost.PostInFeed, url=args.monitorPollPostUrl)
+        postRep = reader.read_post_as(PollPost.PostInFeed, url=args.monitorPollPostUrl)
         def callback(changeDescription):
-            informUser(datetime.now().strftime("%m-%d %H:%M:%S"))
-            informUser(*changeDescription)
-            informUser("")
+            inform_user(datetime.now().strftime("%m-%d %H:%M:%S"))
+            inform_user(*changeDescription)
+            inform_user("")
         changeObserver = PollPostChangeObserver(0, callback, reader, args.monitorPollPostUrl)
         changeObserver.run()
         exit()
     elif args.pollPostUrl:
-        postRep = reader.readPostAs(PollPost.PostInFeed, url=args.pollPostUrl)
+        postRep = reader.read_post_as(PollPost.PostInFeed, url=args.pollPostUrl)
         pollPost = PollPost(postRep)
         posts.append(pollPost)
     elif args.postUrl:
-        posts.append(Post(reader.readPost(args.postUrl)))
+        posts.append(Post(reader.read_post(args.postUrl)))
     else:
         if args.groups:
             for groupId in args.groups:
-                posts.extend([Post(rep) for rep in reader.readGroupPosts(groupId)])
+                posts.extend([Post(rep) for rep in reader.read_group_posts(groupId)])
         if args.pages:
             for pageName in args.pages:
-                posts.extend([Post(rep) for rep in reader.readPagePosts(pageName)])
+                posts.extend([Post(rep) for rep in reader.read_page_posts(pageName)])
 
-    informUser(encode(posts))
+    inform_user(encode(posts))
 if __name__ == "__main__":
     if (args.outputFile):
         configure(informUser=args.outputFile)

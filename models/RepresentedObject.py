@@ -3,7 +3,7 @@ import Json
 class RepresentedObject(object):
     def __init__(self, representation):
         if not (representation is None):
-            representation.createObject(self)
+            representation.create_object(self)
 
-    def toJson(self):
+    def to_json(self):
         return Json.encode(self)

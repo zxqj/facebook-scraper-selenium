@@ -1,7 +1,7 @@
-from Poll import Poll
-from User import User
+from models.Poll import Poll
+from models.User import User
 from functools import reduce
-from Post import PollPost
+from models.Post import PollPost
 import time
 from output import debug
 
@@ -11,32 +11,32 @@ class ChangeObserver(object):
         self.callback = callback
         self.newState = self.lastState = None
 
-    def generateNextState(self):
+    def generate_next_state(self):
         pass
 
-    def describeChange(self, x1, x2):
+    def describe_change(self, x1, x2):
         pass
 
-    def generateAndTimeNextState(self):
+    def generate_and_time_next_state(self):
         start = time.time()
-        res = self.generateNextState()
+        res = self.generate_next_state()
         debug("check completed ("+str(int(time.time() - start)) + "s)")
         return res
 
     def run(self):
         while (True):
             if (self.lastState is None):
-                res = self.generateAndTimeNextState()
+                res = self.generate_and_time_next_state()
                 self.newState = self.lastState = res
                 time.sleep(self.delay)
                 continue
             self.lastState = self.newState
-            self.newState = self.generateAndTimeNextState()
+            self.newState = self.generate_and_time_next_state()
             if not (self.newState == self.lastState):
-                self.callback(self.describeChange(self.lastState, self.newState))
+                self.callback(self.describe_change(self.lastState, self.newState))
             time.sleep(self.delay)
 
-def formatPollOption(option, voters):
+def format_poll_option(option, voters):
     voterString = reduce(lambda x,y: x+", "+y, map(lambda u: u.name, voters))
     return '{o}: {v}'.format(o=option, v=voterString)
 
@@ -46,13 +46,13 @@ class PollPostChangeObserver(ChangeObserver):
         self.reader = reader
         self.pollPostUrl = pollPostUrl
 
-    def generateNextState(self):
-        postRep = self.reader.readPostAs(PollPost.PostInFeed, url=self.pollPostUrl)
+    def generate_next_state(self):
+        postRep = self.reader.read_post_as(PollPost.PostInFeed, url=self.pollPostUrl)
         poll = PollPost(postRep).poll
-        debug(*[formatPollOption(option, voters) for option, voters in poll.votes.items()])
+        debug(*[format_poll_option(option, voters) for option, voters in poll.votes.items()])
         return poll
 
-    def describeChange(self, poll1, poll2):
+    def describe_change(self, poll1, poll2):
         changes = []
         def added(user, option):
             changes.append({"type": "+", "user": user, "option": option})
@@ -106,32 +106,32 @@ class PollPostChangeObserver(ChangeObserver):
 
 if __name__ == "__main__":
 
-    def getPollObj(d):
+    def get_poll_obj(d):
         votes=dict()
         for k,v in d.items():
             votes[k] = [User(name=n) for n in v]
         return Poll(votes=votes)
 
-    def runTest(votes1, votes2, expectedResults):
+    def run_test(votes1, votes2, expectedResults):
         ppco = PollPostChangeObserver(None,None,None,None)
-        curState = getPollObj(votes1)
-        nextState = getPollObj(votes2)
-        result = [x for x in ppco.describeChange(curState, nextState)]
+        curState = get_poll_obj(votes1)
+        nextState = get_poll_obj(votes2)
+        result = [x for x in ppco.describe_change(curState, nextState)]
         passed = reduce(lambda x,y: x and (y in result), expectedResults, True) and len(expectedResults) == len(result)
         print("Passed" if passed else "Failed")
 
-    runTest({"Michelle": ["Patrick"], "Richard": []},
-            {"Michelle": ["Patrick"], "Richard": ["Patrick"]},
-            ["Patrick voted for Richard"])
-    runTest({"Michelle": ["Patrick"], "Richard": []},
-            {"Michelle": [], "Richard": ["Patrick"]},
-            ["Patrick voted for Richard", "Patrick removed vote from Michelle"])
-    runTest({"Michelle": ["Patrick"]},
-            {"Richard": ["Patrick"]},
-            ["Patrick voted for Richard", "Patrick removed vote from Michelle"])
-    runTest({ "Renee": ["Maria", "Chuck", "Joe", "Keri", "Angela", "Christopher", "Jim"],
+    run_test({"Michelle": ["Patrick"], "Richard": []},
+             {"Michelle": ["Patrick"], "Richard": ["Patrick"]},
+             ["Patrick voted for Richard"])
+    run_test({"Michelle": ["Patrick"], "Richard": []},
+             {"Michelle": [], "Richard": ["Patrick"]},
+             ["Patrick voted for Richard", "Patrick removed vote from Michelle"])
+    run_test({"Michelle": ["Patrick"]},
+             {"Richard": ["Patrick"]},
+             ["Patrick voted for Richard", "Patrick removed vote from Michelle"])
+    run_test({"Renee": ["Maria", "Chuck", "Joe", "Keri", "Angela", "Christopher", "Jim"],
               "Michelle": ["Richard", "Steven", "Molly", "Jennifer", "Renee", "Dianne"],
-              "Joe": ["Patrick"] },
-            { "Renee": ["Maria", "Chuck", "Joe", "Keri", "Angela", "Christopher", "Jim", "Steven"],
+              "Joe": ["Patrick"]},
+             { "Renee": ["Maria", "Chuck", "Joe", "Keri", "Angela", "Christopher", "Jim", "Steven"],
               "Michelle": ["Richard", "Molly", "Jennifer", "Renee", "Dianne", "Patrick"] },
-            ["Patrick voted for Michelle", "Patrick removed vote from Joe", "Steven voted for Renee", "Steven removed vote from Michelle"])
+             ["Patrick voted for Michelle", "Patrick removed vote from Joe", "Steven voted for Renee", "Steven removed vote from Michelle"])

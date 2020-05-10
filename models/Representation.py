@@ -11,7 +11,7 @@ class Representation(object):
 
     return value: None
     """
-    def createObject(self, obj):
+    def create_object(self, obj):
         pass    
     
     """
@@ -24,7 +24,7 @@ class Representation(object):
     """
     @staticmethod
     def get(rootNode, RepresentationClass):
-        nodes = RepresentationClass.getAll(rootNode)
+        nodes = RepresentationClass.get_all(rootNode)
         return None if len(nodes) is 0 else nodes[0]
 
     """
@@ -35,7 +35,7 @@ class Representation(object):
     return value: List<Representation> -- will be an empty List if none are found
     """
     @staticmethod
-    def getAll(rootNode):
+    def get_all(rootNode):
         pass
 
     @staticmethod
@@ -44,7 +44,7 @@ class Representation(object):
             def __init__(self, node):
                 super().__init__(node)
 
-            def createObject(self, object):
+            def create_object(self, object):
                 creator(self.node, object)
 
             @staticmethod

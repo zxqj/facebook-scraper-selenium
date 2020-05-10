@@ -1,3 +1,7 @@
 geckodriver.log
 conf.py
 venv
+__pycache__
+log
+out
+.idea

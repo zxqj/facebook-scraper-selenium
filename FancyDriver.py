@@ -32,7 +32,7 @@ class FancyDriver:
             return results
 
     def query_for_element_until_present(self, xpath, failWaitSeconds=.05, timeout=60):
-        return self.query_for_elements_until_present(xpath, failWaitSeconds=failWaitSeconds, timeout=timeout)[0];
+        return self.query_for_elements_until_present(xpath, failWaitSeconds=failWaitSeconds, timeout=timeout)[0]
 
     def force_interaction(self, interaction, failWaitSeconds=.05, timeout=None):
         starttime = time.time()

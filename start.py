@@ -4,7 +4,7 @@ from models.Post import Post
 from models.Post import PollPost
 import argparse
 from Json import encode
-from ChangeObserver import PollPostChangeObserver
+from PollPostChangeObserver import PollPostChangeObserver
 from PostReader import PostReader
 from conf import LOGIN_PASSWORD, LOGIN_EMAIL
 from output import inform_user, debug, configure

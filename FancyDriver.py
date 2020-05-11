@@ -56,7 +56,7 @@ class FancyDriver:
                 self.driver.get(url)
                 finishedrequest = True
             except TimeoutException:
-                debug('Reqeust to {url} timed out.  Retrying.'.format(url=url))
+                debug('Request to {url} timed out.  Retrying.'.format(url=url))
 
     def __getattr__(self, item):
         return getattr(self.driver, item)

@@ -2,7 +2,7 @@ from models.Representation import Representation
 from models.RepresentedObject import RepresentedObject
 from functools import reduce
 from models.User import User
-from util import FancyDriver
+from FancyDriver import FancyDriver
 
 
 class InPostRepresentation(Representation):

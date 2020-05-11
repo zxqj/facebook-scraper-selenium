@@ -1,9 +1,10 @@
 import time
 
 from selenium.common.exceptions import ElementNotInteractableException, ElementClickInterceptedException, \
-    NoSuchElementException
+    NoSuchElementException, TimeoutException
 
 import Browser
+from output import debug
 
 
 class FancyDriver:
@@ -47,3 +48,15 @@ class FancyDriver:
             except ElementClickInterceptedException:
                 time.sleep(failWaitSeconds)
                 continue
+
+    def get(self, url):
+        finishedrequest = False
+        while (not finishedrequest):
+            try:
+                self.driver.get(url)
+                finishedrequest = True
+            except TimeoutException:
+                debug('Reqeust to {url} timed out.  Retrying.'.format(url=url))
+
+    def __getattr__(self, item):
+        return getattr(self.driver, item)

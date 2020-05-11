@@ -1,6 +1,6 @@
 from models.RepresentedObject import RepresentedObject
 from models.Representation import Representation
-from util import FancyDriver
+from FancyDriver import FancyDriver
 
 
 class TextLinkRep(Representation):

@@ -2,6 +2,7 @@ import time
 
 import Browser
 from models.Post import Post
+from FancyDriver import FancyDriver
 
 
 class PostReader(object):
@@ -16,6 +17,7 @@ class PostReader(object):
         # browser instance
         if (browser == None):
             self.browser = Browser.get()
+        self.browser = FancyDriver(self.browser)
 
     def read_post(self, url=None, path=None, groupId=None, postId=None):
         if not (url is None):

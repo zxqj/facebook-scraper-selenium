@@ -3,7 +3,7 @@ import sys
 from selenium.common.exceptions import NoSuchElementException
 
 import Browser
-from util import FancyDriver
+from FancyDriver import FancyDriver
 
 
 def login(email, password, browser=None):

@@ -11,6 +11,10 @@ class InPostRepresentation(Representation):
 
     def create_object(self, dataObject):
         dataObject.votes = dict()
+        moreVotersButton = self.node.find_elements_by_xpath("//div[contains(text(), 'More Options')]")
+        fancyDriver = FancyDriver(self.node)
+        if (not (moreVotersButton == None)) and len(moreVotersButton) > 0:
+            fancyDriver.force_interaction(lambda: moreVotersButton[0].click())
         pollOptionSplitters = self.node.find_elements_by_xpath(".//div[text()='Voters for this option']")
         for pollOptionSplitter in pollOptionSplitters:
             optionParent = pollOptionSplitter.find_elements_by_xpath("./preceding-sibling::div")[0]
@@ -22,9 +26,9 @@ class InPostRepresentation(Representation):
 
             if (not (moreVotersDialogButton == None)) and len(moreVotersDialogButton) > 0:
                 moreVotersDialogButton = moreVotersDialogButton[0]
-                FancyDriver(self.node).force_interaction(lambda: moreVotersDialogButton.click())
+                fancyDriver.force_interaction(lambda: moreVotersDialogButton.click())
                 xpathexpr = '//div[contains(@class,"profileBrowserDialog")]'
-                dialogNode = FancyDriver(self.node).query_for_element_until_present(xpathexpr, timeout=60)
+                dialogNode = fancyDriver.query_for_element_until_present(xpathexpr, timeout=60)
                 users = [User(rep=rep) for rep in User.CirclePicture.get_all(dialogNode)]
                 dialogNode.find_elements_by_xpath('.//a[contains(@data-testid, "dialog_title_close_button")]')[0].click()
 

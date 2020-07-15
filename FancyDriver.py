@@ -9,7 +9,7 @@ from output import debug
 
 class FancyDriver:
     def __init__(self, driver=None):
-        if (driver == None):
+        if (driver is None):
             driver=Browser.get()
         self.driver = driver
 
@@ -49,14 +49,14 @@ class FancyDriver:
                 time.sleep(failWaitSeconds)
                 continue
 
-    def get(self, url):
-        finishedrequest = False
-        while (not finishedrequest):
-            try:
-                self.driver.get(url)
-                finishedrequest = True
-            except TimeoutException:
-                debug('Request to {url} timed out.  Retrying.'.format(url=url))
+#    def get(self, url):
+#        finishedrequest = False
+#        while (not finishedrequest):
+#            try:
+#                self.driver.get(url)
+#                finishedrequest = True
+#            except TimeoutException:
+#                debug('Request to {url} timed out.  Retrying.'.format(url=url))
 
     def __getattr__(self, item):
         return getattr(self.driver, item)

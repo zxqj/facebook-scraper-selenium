@@ -14,10 +14,7 @@ class PostReader(object):
         self.delay = delay
         self.readAll = readAll
         self.rootUrl = "https://www.facebook.com/"
-        # browser instance
-        if (browser == None):
-            self.browser = Browser.get()
-        self.browser = FancyDriver(self.browser)
+        self.browser = FancyDriver()
 
     def read_post(self, url=None, path=None, groupId=None, postId=None):
         if not (url is None):

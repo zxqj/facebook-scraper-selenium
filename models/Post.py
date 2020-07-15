@@ -31,6 +31,9 @@ class InFeedRepresentation(Representation):
         # Creating post text entry
         dataObject.content = self.node.find_element_by_class_name("userContent").text
 
+    def is_poll(self):
+        return len(Poll.InPost.get_all(self.node)) > 0
+
     @staticmethod
     def get(rootNode):
         return Representation.get(rootNode, InFeedRepresentation)
@@ -48,6 +51,9 @@ class PollPostRepresentation(InFeedRepresentation):
         super().create_object(dataObject)
         pollRep = Poll.InPost.get(self.node.parent)
         dataObject.poll = Poll(rep=pollRep)
+
+    def is_open(self):
+        return len(self.node.find_elements_by_xpath("//span[contains(text(), 'turned off commenting for this post')]")) > 0
 
     @staticmethod
     def get(rootNode):

@@ -5,15 +5,34 @@ ____
 
 ### How to use it?
 
-Firstly, make sure you have selenium >= 3.141.0, GeckoDriver and FireFox installed.
+* Install python (this is often already installed) and make sure it is at least v3.8.0
+    * Windows
+        * Install scoop (https://github.com/lukesampson/scoop)
+            * Open Powershell and run
+                ```
+                Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+                iwr -useb get.scoop.sh | iex                
+                ```
+        * If that completes successfully, run
+            ```
+            scoop install python
+            ```
+* Install virtualenv (https://virtualenv.pypa.io/en/stable/installation.html)
+    * Windows: `python -m pip install --user virtualenv`
+* Create virtual environment
+    * change to repository directory
+    * Windows: `python -m venv env`
+* Install dependencies `pip install -r requirements.txt`
+* Install firefox
+* Download geckodriver
+* Copy conf.template.py to conf.py and fill in 
+    * path to firefox executable
+    * path to geckodriver executable
+    * facebook credentials
 
-Store your email and password for Facebook login in credentials.txt.
-
-Make sure the variables BROWSER_EXE and GECKODRIVER in the script are set to the locations of the firefox and geckodriver executables, respectively.  On Mac, the firefox executable is at `/Applications/Firefox.app/Contents/MacOS/firefox-bin` by default.
-
-Use `scraper.py` to collect the data. 
+Use `start.py` to collect the data. 
 ```
-usage: scrape.py [-h] [--pages PAGES [PAGES ...]] [--groups GROUPS [GROUPS ...]][-d DEPTH]
+usage: start.py [-h] [--pages PAGES [PAGES ...]] [--groups GROUPS [GROUPS ...]][-d DEPTH]
 Data Collection
 arguments:
   -h, --help            show this help message and exit
@@ -29,7 +48,7 @@ arguments:
                         How many recent posts you want to gather in
                         multiples of (roughly) 8.
 ```
-Example: ```python scraper.py --pages feelzesty -d 20```
+Example: ```python start.py --pages feelzesty -d 20```
 ____
 The output is `posts.csv` inside the script folder.
 

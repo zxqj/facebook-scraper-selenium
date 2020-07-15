@@ -3,10 +3,32 @@
 #####
 
 # path to firefox executable
-BROWSER_EXE = '/Applications/Firefox.app/Contents/MacOS/firefox-bin'
+browser_exe_path = 'C://Program Files/Mozilla Firefox/firefox.exe'
+
 # path to geckodriver executable
-GECKODRIVER = '/usr/local/bin/geckodriver'
+geckodriver_exe_path = 'C://Users/patrick/bin/geckodriver'
 
 # Facebook credentials
-LOGIN_EMAIL = <enter facebook username here>
-LOGIN_PASSWORD = <enter facebook passwordhere>
+facebook_login_email = 'branch.patrick@gmail.com'
+facebook_login_password = 'zebediahpurp!'
+
+# option defaults
+# any options provided directly on command line take precedence
+"""
+command="watch-poll"
+groups=""
+pages=""
+post=""
+poll_no_vote_options=['(vote withdrawn temporarily)']
+poll_user_names_file='./players.txt'
+poll_complete_on_quorum=True
+poll_deadline="Tomorrow at 5:30pm"
+poll_notify_on_complete=True
+poll_notify_on_unknown_user=True
+poll_daemon_mode=True
+log_file=""
+output_file=""
+log_discord=""
+output_discord=""
+notify_discord=""
+"""

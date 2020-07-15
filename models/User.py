@@ -2,6 +2,9 @@ from models.RepresentedObject import RepresentedObject
 from models.Representation import Representation
 from FancyDriver import FancyDriver
 
+# todo: maybe this should go somewhere else
+def get_poll_option(player_name):
+    return player_name.split(" ")[0]
 
 class TextLinkRep(Representation):
 
